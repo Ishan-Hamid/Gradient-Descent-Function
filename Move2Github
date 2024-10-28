@@ -1,0 +1,88 @@
+import numpy as np
+from matplotlib import pyplot as plt
+import matplotlib.colors
+
+def banana(r):
+    '''Function to be minimised'''
+    x, y = r
+    x = r[0]
+    y = r[1]
+    f = (1-x)**2 + 100*(y-x**2)**2
+    return f
+
+a = np.array([1,4])
+print(banana(a))
+
+def banana_grad(r):
+    '''Calculate gradient of banana function at coordinates r = (x,y)'''
+    x, y = r
+    x = r[0]
+    y = r[1]
+    fdx = -2*(1-x) + 200*(y-x**2)*(-2*x)
+    fdy = 200*y - 200*x**2
+    df = np.array([fdx,fdy])
+    return df
+
+
+def gradientDescent(df, r0, eta, n_steps):
+    rlist = [r0]
+    for i in range(0, n_steps):
+        r0 = r0 - eta * df(r0)
+        rlist.append(r0)
+    return np.array(rlist)
+
+
+print(gradientDescent(banana_grad, [0.3, 0.4], 0.01, 2))
+
+# Initialize parameters for the banana function plot
+N = 100  # Resolution of the plot
+x0, x1 = -0.2, 1.2  # x-axis bounds
+y0, y1 = -0.2, 1.2     # y-axis bounds
+xs = np.linspace(x0, x1, N)
+ys = np.linspace(y0, y1, N)
+r0 = [0.2, 1]
+mesh = np.meshgrid(xs,ys)
+
+# Placeholder for data
+data = np.zeros((N, N))
+# Implement the banana function on data
+bmesh = banana(mesh)
+
+# Plot starter code
+plt.figure(figsize=(8,8))
+im = plt.imshow(bmesh, extent=(x0, x1, y0, y1), origin='lower', cmap=matplotlib.cm.gray,
+                norm=matplotlib.colors.LogNorm(vmin=0.01, vmax=200))
+plt.colorbar(im, orientation='vertical', fraction=0.03925, pad=0.04)
+
+# Define step sizes for gradient descent
+etas = np.logspace(-2, -10, 10) # Specify eta values
+
+model = gradientDescent(banana_grad, r0, etas[1], 100000)
+
+plt.rcParams["figure.figsize"] = [7.00, 3.00]
+plt.rcParams["figure.autolayout"] = True
+
+x = [model[-1,0]]
+y = [model[-1,1]]
+plt.plot(x, y, marker="x", markersize=15, markeredgecolor="red", label = 'Low Point')
+
+seeker0 = gradientDescent(banana_grad, r0, 0.4e-2, 200)
+plt.plot(seeker0[:,0], seeker0[:,1], label = 'seeker0')
+
+seeker1 = gradientDescent(banana_grad, r0, etas[1], 100000)
+plt.plot(seeker1[:,0], seeker1[:,1], label = 'seeker1')
+
+seeker2 = gradientDescent(banana_grad, r0, etas[2], 100000)
+plt.plot(seeker2[:,0], seeker2[:,1], label = 'seeker2')
+
+seeker3 = gradientDescent(banana_grad, r0, etas[3], 100000)
+plt.plot(seeker3[:,0], seeker3[:,1], label = 'seeker3')
+
+seeker4 = gradientDescent(banana_grad, r0, etas[4], 100000)
+plt.plot(seeker4[:,0], seeker4[:,1], label = 'seeker4')
+
+plt.xlabel('X Values')
+plt.ylabel('Y Values')
+
+plt.legend()
+plt.show()
